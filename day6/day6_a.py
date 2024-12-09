@@ -23,7 +23,27 @@ class Lab:
         self.start_x: int = 0
         self.start_y: int = 0
         self.map: list[list] = self.build(raw_map)
-        self.legal_moves: list = [(-1, 0), (0, 1), (1, 0), (0, -1)] # e.g. up, right, down, left (in ref. to a coord system starting at the topmost row)
+        self.legal_moves: list = [ # e.g. up, right, down, left (in ref. to a coord system starting at the topmost row)
+            {
+                "change": (-1, 0),
+                "denotion": "^"
+            },
+            {
+            
+                "change": (0, 1),
+                "denotion": ">"
+            },
+            {
+        
+                "change": (1, 0),
+                "denotion": "v"
+            },
+            {
+        
+                "change": (0, -1),
+                "denotion": "<"
+            }
+        ]
         
         
     def set_start_x(self, new_start_x: int) -> None:
@@ -87,20 +107,17 @@ class Lab:
         curr_x = self.start_x
         curr_y = self.start_y
         
-        self.map[curr_y][curr_x].set_type("^")
-        self.display_map()
+        move_idx = 0
         
         num_spaces = 0
         not_escaped = True
-        
-        move_idx = 0
         
         while not_escaped:
             
             movement = self.legal_moves[move_idx]
             
-            new_y = curr_y + movement[0]
-            new_x = curr_x + movement[1]
+            new_y = curr_y + movement["change"][0]
+            new_x = curr_x + movement["change"][1]
             
             if self.map[new_y][new_x].get_type() == "#":
                 move_idx = (move_idx + 1) % len(self.legal_moves) # repeat movement list if end movement pattern is reached
@@ -112,7 +129,7 @@ class Lab:
                 
             if self.map[curr_y][curr_x].get_visited() is False:
                 self.map[curr_y][curr_x].set_visited(True)
-                self.map[curr_y][curr_x].set_type("^")
+                self.map[curr_y][curr_x].set_type(movement["denotion"])
                 num_spaces += 1
                 
                 self.display_map()
@@ -135,5 +152,4 @@ def read_data(in_path: str) -> tuple[list[list], int, int]:
 raw_map = read_data("./day6/day6.txt")
 
 lab = Lab(raw_map)
-lab.display_map()
 lab.escape()
