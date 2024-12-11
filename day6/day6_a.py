@@ -74,9 +74,12 @@ class Lab:
             
         return processed_map
             
-    def display_map(self):
+    def display_map(self, in_place: bool = True):
         
-        print("\n")
+        if in_place:
+            print("\033[H", end = "")
+        else:
+            print("\n")
         
         for row in self.map:
             print(''.join(node.type for node in row))
@@ -85,15 +88,17 @@ class Lab:
         for row in self.map:
             for cell in row:
                 cell.set_visited(False)
-                if cell.get_type() == "^":
+                if cell.get_type() != "#":
                     cell.set_type(".")
                 
                 
     def has_escaped(self, curr_x: int, curr_y: int) -> bool:
         escaped = True
         
-        if curr_x > 0 and curr_y > 0 and curr_x < (len(self.map) - 1)  and curr_y < (len(self.map[curr_y]) - 1):
-            escaped = False
+        if curr_x >= 0 and curr_y >= 0:
+            if curr_y <= len(self.map) - 1:
+                if curr_x <= len(self.map[curr_y]) - 1:
+                    escaped = False
             
         return escaped
             
@@ -107,9 +112,12 @@ class Lab:
         curr_x = self.start_x
         curr_y = self.start_y
         
+        self.map[curr_y][curr_x].set_visited(True)
+        self.map[curr_y][curr_x].set_type(f"\033[32m{'^'}\033[0m")
+        
         move_idx = 0
         
-        num_spaces = 0
+        num_spaces = 1
         not_escaped = True
         
         while not_escaped:
@@ -118,6 +126,11 @@ class Lab:
             
             new_y = curr_y + movement["change"][0]
             new_x = curr_x + movement["change"][1]
+            
+            if self.has_escaped(new_x, new_y):
+                not_escaped = False
+                print(f"sucessfully escaped after covering {num_spaces} steps!")
+                break
             
             if self.map[new_y][new_x].get_type() == "#":
                 move_idx = (move_idx + 1) % len(self.legal_moves) # repeat movement list if end movement pattern is reached
@@ -129,14 +142,11 @@ class Lab:
                 
             if self.map[curr_y][curr_x].get_visited() is False:
                 self.map[curr_y][curr_x].set_visited(True)
-                self.map[curr_y][curr_x].set_type(movement["denotion"])
+                self.map[curr_y][curr_x].set_type(movement["denotion"]) 
                 num_spaces += 1
                 
                 self.display_map()
-            
-            if self.has_escaped(curr_x, curr_y):
-                not_escaped = False
-                print(f"sucessfully escaped after covering {num_spaces} steps!")       
+                   
                         
 def read_data(in_path: str) -> tuple[list[list], int, int]:
     
@@ -148,8 +158,9 @@ def read_data(in_path: str) -> tuple[list[list], int, int]:
             raw_data.append(processed_line)
             
     return raw_data
-                        
-raw_map = read_data("./day6/day6.txt")
+ 
+if __name__ == "__main__":                         
+    raw_map = read_data("./day6/day6.txt")
 
-lab = Lab(raw_map)
-lab.escape()
+    lab = Lab(raw_map)
+    lab.escape()
